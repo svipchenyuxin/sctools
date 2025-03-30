@@ -15,11 +15,11 @@ const platformIcons: {[key: string]: string} = {
   'youtube': '/icons/youtube.svg',
   'xianyu': '/icons/xianyu.svg',
   'taobao': '/icons/taobao.svg',
-  'other': '/icons/AI.svg',
+  'other': '/icons/Ai.svg',
   // 工具分类图标
   'project_research': '/icons/research.svg',
   'image_processing': '/icons/image.svg',
-  'office_efficiency': '/icons/document.svg',
+  'office_efficiency': '/icons/Document.svg',
   'team_collaboration': '/icons/team.svg'
 };
 
