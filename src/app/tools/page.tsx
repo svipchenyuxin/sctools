@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -71,7 +71,8 @@ const categories = [
   { id: 'team_collaboration', name: '团队提效', type: 'category' }
 ];
 
-export default function ToolsPage() {
+// 创建一个新的组件来处理搜索参数
+function ToolsContent() {
   const searchParams = useSearchParams();
   const platformParam = searchParams.get('platform');
   const categoryParam = searchParams.get('category');
@@ -451,5 +452,22 @@ export default function ToolsPage() {
 
       <Footer />
     </div>
+  );
+}
+
+// 主组件
+export default function ToolsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Navbar activeItem="tools" />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-2xl text-gray-500">加载中...</div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <ToolsContent />
+    </Suspense>
   );
 } 
