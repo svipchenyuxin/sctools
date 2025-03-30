@@ -15,7 +15,7 @@ const platformCategories = [
   { id: 'youtube', name: 'YouTube', icon: '/icons/youtube.svg' },
   { id: 'xianyu', name: '闲鱼', icon: '/icons/xianyu.svg' },
   { id: 'taobao', name: '淘宝', icon: '/icons/taobao.svg' },
-  { id: 'other', name: 'AI', icon: '/icons/ai.svg' }
+  { id: 'other', name: 'AI', icon: '/icons/Ai.svg' }
 ];
 
 // 平台图标映射
