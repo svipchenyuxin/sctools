@@ -19,7 +19,7 @@ const platformIcons: {[key: string]: string} = {
   // 工具分类图标
   'project_research': '/icons/research.svg',
   'image_processing': '/icons/image.svg',
-  'office_efficiency': '/icons/Document.svg',
+  'office_efficiency': '/icons/document.svg',
   'team_collaboration': '/icons/team.svg'
 };
 
