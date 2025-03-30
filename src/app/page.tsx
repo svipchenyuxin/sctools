@@ -136,7 +136,7 @@ export default function Home() {
             >
               <input 
                 type="text" 
-                placeholder="搜索工具..." 
+                placeholder="输入搜索工具..." 
                 className="flex-grow px-3 py-2 text-sm rounded-l-lg border-0 focus:ring-2 focus:ring-teal-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -170,7 +170,7 @@ export default function Home() {
               >
                 <input 
                   type="text" 
-                  placeholder="您的需求、使用场景，或正在经营的平台..." 
+                  placeholder="输入您的需求、使用场景，或正在经营的平台..." 
                   className="flex-grow px-4 py-3 text-lg rounded-l-lg border-0 focus:ring-2 focus:ring-teal-300"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -250,82 +250,89 @@ export default function Home() {
                           : 'group-hover:[transform:perspective(800px)_rotateX(10deg)]'
                       }`}
                     />
-                    <span className="mt-2 text-xs text-gray-700 truncate w-full text-center px-1">{platform.name}</span>
+                    <span className="mt-2 text-sm text-gray-600">{platform.name}</span>
                   </div>
                 </button>
               ))}
             </div>
-          </div>
-        </section>
-        
-        {/* 当前平台工具展示区 */}
-        <section className="py-6 px-4">
-          <div className="container-custom">
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="text-lg font-medium text-gray-800">
-                {platformCategories.find(p => p.id === selectedPlatform)?.name}工具
-              </h2>
-              <Link 
-                href={`/tools?platform=${selectedPlatform}`} 
-                className="text-teal-600 hover:text-teal-800 flex items-center text-base"
-              >
-                查看全部
-                <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
-            
-            {currentPlatformTools.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+
+            {/* 工具展示区域 */}
+            <div className="mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {currentPlatformTools.map((tool: any) => (
-                  <Link href={`/tools/${tool.id}`} key={tool.id} className="block">
-                    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-8 h-full flex flex-col">
-                      <div className="flex items-start justify-between mb-5">
-                        <h3 className="text-2xl font-semibold text-gray-800">{tool.name}</h3>
-                        <div className="flex gap-1">
-                          {tool.platforms.map((platformId: string) => (
-                            <img 
-                              key={platformId}
-                              src={platformIcons[platformId] || '/icons/Ai.svg'}
-                              alt={platformId}
-                              className="w-5 h-5"
-                            />
-                          ))}
+                  <Link 
+                    href={`/tools/${tool.id}`} 
+                    key={tool.id}
+                    className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden transform hover:-translate-y-1"
+                  >
+                    <div className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-800 group-hover:text-primary mb-2">
+                            {tool.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 line-clamp-3 mb-3">
+                            {tool.description}
+                          </p>
                         </div>
+                        {tool.icon && (
+                          <img 
+                            src={tool.icon} 
+                            alt={tool.name} 
+                            className="w-12 h-12 rounded-lg object-cover ml-4"
+                          />
+                        )}
                       </div>
-                      <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2">{tool.description}</p>
-                      <div className="flex justify-end items-center text-xs">
-                        <span className="text-teal-600">查看详情</span>
+                      
+                      {/* 标签展示 */}
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        {tool.tags && tool.tags.slice(0, 3).map((tag: string, index: number) => (
+                          <span 
+                            key={index}
+                            className="px-3 py-1 bg-gray-50 text-xs text-gray-600 rounded-full border border-gray-100"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {/* 工具信息 */}
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div className="flex items-center text-xs text-gray-500">
+                          {tool.clicks > 0 && (
+                            <>
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              {tool.clicks} 次使用
+                            </>
+                          )}
+                        </div>
+                        <span className="text-xs text-primary font-medium group-hover:underline">
+                          查看详情 →
+                        </span>
                       </div>
                     </div>
                   </Link>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-lg text-gray-500 mb-4">
-                  暂无{platformCategories.find(p => p.id === selectedPlatform)?.name}相关工具
-                </p>
-                <Link 
-                  href="/admin/add" 
-                  className="inline-block px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition"
-                >
-                  添加工具
-                </Link>
-              </div>
-            )}
-            
-            {currentPlatformTools.length > 0 && (
-              <div className="text-center mt-8">
-                <Link 
-                  href={`/tools?platform=${selectedPlatform}`}
-                  className="inline-block px-4 py-2 border border-teal-600 text-teal-600 rounded-lg hover:bg-teal-50 transition"
-                >
-                  查看更多{platformCategories.find(p => p.id === selectedPlatform)?.name}工具
-                </Link>
-              </div>
-            )}
+              
+              {/* 查看更多按钮 */}
+              {currentPlatformTools.length > 0 && (
+                <div className="text-right mt-4">
+                  <Link
+                    href={`/tools?platform=${selectedPlatform}`}
+                    className="inline-flex items-center text-primary hover:text-primary-dark transition-colors duration-200 text-sm font-medium"
+                  >
+                    查看全部{platformCategories.find(p => p.id === selectedPlatform)?.name}工具
+                    <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </section>
         
