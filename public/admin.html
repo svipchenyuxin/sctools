@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工具库管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .admin-table th, .admin-table td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .admin-table tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-teal-600 text-white p-4 shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">工具库管理后台</h1>
+                <a href="/" class="text-white hover:text-gray-200">返回前台</a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container mx-auto px-4 py-8">
+        <div class="mb-6 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800">工具管理</h2>
+            <button id="addToolBtn" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-md transition">
+                添加新工具
+            </button>
+        </div>
+        
+        <div id="statusMessage" class="mb-4 p-3 rounded hidden"></div>
+        
+        <!-- 工具列表 -->
+        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+            <table class="min-w-full admin-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th>ID</th>
+                        <th>工具名称</th>
+                        <th>平台</th>
+                        <th>上传日期</th>
+                        <th>点击量</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="toolsTableBody">
+                    <!-- 工具数据将通过JavaScript动态加载 -->
+                    <tr>
+                        <td colspan="6" class="text-center py-4">正在加载数据...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    
+    <!-- 删除确认对话框 -->
+    <div id="deleteModal" class="modal">
+        <div class="bg-white rounded-lg max-w-md w-full mx-4 p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">确认删除</h3>
+            <p class="text-gray-600 mb-6">
+                您确定要删除这个工具吗？此操作无法撤销。
+            </p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-800 transition">
+                    取消
+                </button>
+                <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white transition">
+                    确认删除
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑工具对话框 -->
+    <div id="editModal" class="modal">
+        <div class="bg-white rounded-lg max-w-3xl w-full mx-4 p-6">
+            <h3 id="editModalTitle" class="text-lg font-medium text-gray-900 mb-4">添加新工具</h3>
+            <form id="toolForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="hidden" id="toolId" name="id">
+                
+                <div class="md:col-span-2">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                        工具名称 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="name" name="name" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                        简短描述 <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="description" name="description" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        适用平台 <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="platformsContainer">
+                        <!-- 平台选项会动态加载 -->
+                    </div>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="uploader" class="block text-sm font-medium text-gray-700 mb-1">
+                        上传者
+                    </label>
+                    <input type="text" id="uploader" name="uploader" class="w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="downloadLink" class="block text-sm font-medium text-gray-700 mb-1">
+                        下载链接
+                    </label>
+                    <input type="url" id="downloadLink" name="downloadLink" class="w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="originalPostLink" class="block text-sm font-medium text-gray-700 mb-1">
+                        原始链接
+                    </label>
+                    <input type="url" id="originalPostLink" name="originalPostLink" class="w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="inviteCode" class="block text-sm font-medium text-gray-700 mb-1">
+                        邀请码
+                    </label>
+                    <input type="text" id="inviteCode" name="inviteCode" class="w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">
+                        标签
+                    </label>
+                    <input type="text" id="tags" name="tags" class="w-full p-2 border border-gray-300 rounded-md" placeholder="用逗号分隔多个标签，如：抖音,电商,营销">
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label for="detailedDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                        详细描述
+                    </label>
+                    <textarea id="detailedDescription" name="detailedDescription" rows="4" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                </div>
+                
+                <div class="md:col-span-2 flex justify-end space-x-3 mt-4">
+                    <button type="button" id="cancelEditBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-800 transition">
+                        取消
+                    </button>
+                    <button type="submit" id="saveToolBtn" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 rounded-md text-white transition">
+                        保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // 平台数据
+        const platformData = {
+            'douyin': '抖音',
+            'xiaohongshu': '小红书',
+            'wechat': '视频号',
+            'xianyu': '闲鱼',
+            'taobao': '淘宝',
+            'other': '其他'
+        };
+        
+        // 工具数据
+        let toolsData = [];
+        let currentToolId = null;
+        
+        // DOM元素
+        const toolsTableBody = document.getElementById('toolsTableBody');
+        const statusMessage = document.getElementById('statusMessage');
+        const deleteModal = document.getElementById('deleteModal');
+        const editModal = document.getElementById('editModal');
+        const toolForm = document.getElementById('toolForm');
+        const platformsContainer = document.getElementById('platformsContainer');
+        
+        // 显示状态消息
+        function showStatusMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `mb-4 p-3 rounded ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-400' : 'bg-red-100 text-red-700 border border-red-400'}`;
+            statusMessage.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // 加载工具数据
+        async function loadToolsData() {
+            try {
+                // 使用直接导入的数据
+                // 这里假设有一个名为toolsDataDirect的全局变量
+                if (window.toolsDataDirect && Array.isArray(window.toolsDataDirect)) {
+                    toolsData = window.toolsDataDirect;
+                    renderToolsTable();
+                    return;
+                }
+                
+                // 否则尝试从src/data/toolsData.js中导入
+                // 这里实际上在浏览器中不会工作，因为存在跨域问题
+                // 仅作为示例代码
+                
+                // 最后尝试使用API
+                const response = await fetch('/api/tools');
+                const data = await response.json();
+                
+                if (data && data.data && Array.isArray(data.data)) {
+                    toolsData = data.data;
+                    renderToolsTable();
+                } else {
+                    throw new Error('无法加载工具数据');
+                }
+            } catch (error) {
+                console.error('加载工具数据出错:', error);
+                
+                // 如果都失败了，使用示例数据
+                toolsData = getExampleToolsData();
+                renderToolsTable();
+                
+                showStatusMessage('无法从服务器加载数据，显示示例数据', 'error');
+            }
+        }
+        
+        // 渲染工具表格
+        function renderToolsTable() {
+            if (!toolsData || toolsData.length === 0) {
+                toolsTableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">暂无工具数据</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            
+            toolsData.forEach(tool => {
+                html += `
+                <tr class="hover:bg-gray-50">
+                    <td class="text-sm text-gray-500">${tool.id}</td>
+                    <td>
+                        <div class="text-sm font-medium text-gray-900">${tool.name}</div>
+                        <div class="text-sm text-gray-500 truncate max-w-xs">${tool.description}</div>
+                    </td>
+                    <td>
+                        <div class="flex flex-wrap gap-1">
+                            ${(tool.platforms || []).map(platform => `
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-teal-100 text-teal-800">
+                                    ${platformData[platform] || platform}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="text-sm text-gray-500">${tool.uploadDate || '未知'}</td>
+                    <td class="text-sm text-gray-500">${tool.clicks || 0}</td>
+                    <td class="text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <a href="/tools/${tool.id}" class="text-teal-600 hover:text-teal-900" target="_blank">查看</a>
+                            <button class="text-blue-600 hover:text-blue-900 edit-tool-btn" data-id="${tool.id}">编辑</button>
+                            <button class="text-red-600 hover:text-red-900 delete-tool-btn" data-id="${tool.id}">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            });
+            
+            toolsTableBody.innerHTML = html;
+            
+            // 添加事件监听
+            document.querySelectorAll('.delete-tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentToolId = btn.getAttribute('data-id');
+                    deleteModal.classList.add('show');
+                });
+            });
+            
+            document.querySelectorAll('.edit-tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const toolId = btn.getAttribute('data-id');
+                    openEditModal(toolId);
+                });
+            });
+        }
+        
+        // 获取示例工具数据
+        function getExampleToolsData() {
+            return [
+                {
+                    id: '1',
+                    name: '抖音橱窗助手',
+                    description: '一键设置抖音橱窗，提高商品转化率',
+                    platforms: ['douyin', 'taobao'],
+                    uploader: '数字营销专家',
+                    uploadDate: '2025-02-15',
+                    clicks: 1254
+                },
+                {
+                    id: '2',
+                    name: '小红书自动回复',
+                    description: '智能回复用户评论，提高互动率',
+                    platforms: ['xiaohongshu'],
+                    uploader: '社交媒体专家',
+                    uploadDate: '2025-01-20',
+                    clicks: 986
+                }
+            ];
+        }
+        
+        // 初始化平台选项
+        function initPlatformOptions() {
+            let html = '';
+            
+            for (const [id, name] of Object.entries(platformData)) {
+                html += `
+                <div class="flex items-center">
+                    <input type="checkbox" id="platform-${id}" name="platforms" value="${id}" class="h-4 w-4 text-teal-600 border-gray-300 rounded">
+                    <label for="platform-${id}" class="ml-2 text-sm text-gray-700">
+                        ${name}
+                    </label>
+                </div>
+                `;
+            }
+            
+            platformsContainer.innerHTML = html;
+        }
+        
+        // 打开编辑模态框
+        function openEditModal(toolId = null) {
+            const isEdit = !!toolId;
+            document.getElementById('editModalTitle').textContent = isEdit ? '编辑工具' : '添加新工具';
+            document.getElementById('toolId').value = toolId || '';
+            
+            // 重置表单
+            toolForm.reset();
+            
+            // 清除所有平台选择
+            document.querySelectorAll('#platformsContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            
+            if (isEdit) {
+                const tool = toolsData.find(t => t.id === toolId);
+                
+                if (tool) {
+                    // 填充表单
+                    document.getElementById('name').value = tool.name || '';
+                    document.getElementById('description').value = tool.description || '';
+                    document.getElementById('uploader').value = tool.uploader || '';
+                    document.getElementById('downloadLink').value = tool.downloadLink || '';
+                    document.getElementById('originalPostLink').value = tool.originalPostLink || '';
+                    document.getElementById('inviteCode').value = tool.inviteCode || '';
+                    document.getElementById('detailedDescription').value = tool.detailedDescription || '';
+                    document.getElementById('tags').value = (tool.tags || []).join(', ');
+                    
+                    // 选择平台
+                    (tool.platforms || []).forEach(platform => {
+                        const checkbox = document.getElementById(`platform-${platform}`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+            }
+            
+            editModal.classList.add('show');
+        }
+        
+        // 保存工具
+        async function saveTool(formData) {
+            try {
+                const isEdit = !!formData.id;
+                
+                // 构建请求数据
+                const toolData = {
+                    name: formData.name,
+                    description: formData.description,
+                    platforms: formData.platforms,
+                    uploader: formData.uploader,
+                    downloadLink: formData.downloadLink,
+                    originalPostLink: formData.originalPostLink,
+                    inviteCode: formData.inviteCode,
+                    detailedDescription: formData.detailedDescription,
+                    tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+                };
+                
+                if (isEdit) {
+                    toolData.id = formData.id;
+                }
+                
+                // 在实际环境中，这里应该调用API保存数据
+                // 例如:
+                // const response = await fetch('/api/tools', {
+                //     method: isEdit ? 'PUT' : 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //     },
+                //     body: JSON.stringify(toolData),
+                // });
+                // const result = await response.json();
+                
+                // 模拟API响应
+                const result = {
+                    success: true,
+                    message: isEdit ? '工具更新成功' : '工具添加成功',
+                    data: {
+                        ...toolData,
+                        id: isEdit ? formData.id : Date.now().toString(),
+                        uploadDate: isEdit ? toolsData.find(t => t.id === formData.id).uploadDate : new Date().toISOString().split('T')[0],
+                        clicks: isEdit ? toolsData.find(t => t.id === formData.id).clicks : 0
+                    }
+                };
+                
+                if (result.success) {
+                    if (isEdit) {
+                        // 更新工具数据
+                        const index = toolsData.findIndex(t => t.id === formData.id);
+                        if (index !== -1) {
+                            toolsData[index] = result.data;
+                        }
+                    } else {
+                        // 添加新工具
+                        toolsData.push(result.data);
+                    }
+                    
+                    // 重新渲染表格
+                    renderToolsTable();
+                    
+                    showStatusMessage(result.message, 'success');
+                    editModal.classList.remove('show');
+                } else {
+                    throw new Error(result.message || '操作失败');
+                }
+            } catch (error) {
+                console.error('保存工具出错:', error);
+                showStatusMessage(error.message || '操作失败，请重试', 'error');
+            }
+        }
+        
+        // 删除工具
+        async function deleteTool(toolId) {
+            try {
+                // 在实际环境中，这里应该调用API删除数据
+                // 例如:
+                // const response = await fetch(`/api/tools?id=${toolId}`, {
+                //     method: 'DELETE',
+                // });
+                // const result = await response.json();
+                
+                // 模拟API响应
+                const result = {
+                    success: true,
+                    message: '工具删除成功'
+                };
+                
+                if (result.success) {
+                    // 从数据中移除工具
+                    toolsData = toolsData.filter(tool => tool.id !== toolId);
+                    
+                    // 重新渲染表格
+                    renderToolsTable();
+                    
+                    showStatusMessage(result.message, 'success');
+                    deleteModal.classList.remove('show');
+                } else {
+                    throw new Error(result.message || '删除失败');
+                }
+            } catch (error) {
+                console.error('删除工具出错:', error);
+                showStatusMessage(error.message || '删除失败，请重试', 'error');
+                deleteModal.classList.remove('show');
+            }
+        }
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 添加工具按钮
+            document.getElementById('addToolBtn').addEventListener('click', () => {
+                openEditModal();
+            });
+            
+            // 取消删除按钮
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                deleteModal.classList.remove('show');
+                currentToolId = null;
+            });
+            
+            // 确认删除按钮
+            document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                if (currentToolId) {
+                    deleteTool(currentToolId);
+                }
+            });
+            
+            // 取消编辑按钮
+            document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                editModal.classList.remove('show');
+            });
+            
+            // 表单提交
+            toolForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // 获取平台选择
+                const selectedPlatforms = Array.from(
+                    document.querySelectorAll('#platformsContainer input[type="checkbox"]:checked')
+                ).map(cb => cb.value);
+                
+                // 验证必填字段
+                const name = document.getElementById('name').value.trim();
+                const description = document.getElementById('description').value.trim();
+                
+                if (!name || !description || selectedPlatforms.length === 0) {
+                    showStatusMessage('请填写必填字段：工具名称、简短描述和至少选择一个平台', 'error');
+                    return;
+                }
+                
+                // 构建表单数据
+                const formData = {
+                    id: document.getElementById('toolId').value,
+                    name,
+                    description,
+                    platforms: selectedPlatforms,
+                    uploader: document.getElementById('uploader').value.trim(),
+                    downloadLink: document.getElementById('downloadLink').value.trim(),
+                    originalPostLink: document.getElementById('originalPostLink').value.trim(),
+                    inviteCode: document.getElementById('inviteCode').value.trim(),
+                    detailedDescription: document.getElementById('detailedDescription').value.trim(),
+                    tags: document.getElementById('tags').value.trim()
+                };
+                
+                saveTool(formData);
+            });
+            
+            // 点击模态框背景关闭
+            deleteModal.addEventListener('click', (e) => {
+                if (e.target === deleteModal) {
+                    deleteModal.classList.remove('show');
+                    currentToolId = null;
+                }
+            });
+            
+            editModal.addEventListener('click', (e) => {
+                if (e.target === editModal) {
+                    editModal.classList.remove('show');
+                }
+            });
+        }
+        
+        // 初始化页面
+        function initPage() {
+            initPlatformOptions();
+            loadToolsData();
+            initEventListeners();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html> 
