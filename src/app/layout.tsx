@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import GoogleAnalytics from './components/GoogleAnalytics'
 
 export const metadata: Metadata = {
   title: 'SC ToolNexus - 创业工具聚合平台',
@@ -16,6 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body>
         {children}
       </body>
